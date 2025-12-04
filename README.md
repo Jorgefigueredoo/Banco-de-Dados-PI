@@ -14,7 +14,7 @@ O projeto inclui a modelagem completa do banco de dados:
 
 #### Modelo Conceitual (Diagrama MER)
 
-![Diagrama Entidade-Relacionamento](./diagrams/mer-conceitual.png)
+![Diagrama Entidade-Relacionamento](mer-conceitual.png)
 
 O diagrama conceitual apresenta as principais entidades e seus relacionamentos:
 
@@ -30,7 +30,7 @@ O diagrama conceitual apresenta as principais entidades e seus relacionamentos:
 
 #### Modelo Lógico (Diagrama MR)
 
-![Diagrama Lógico](./diagrams/modelo-logico.png)
+![Diagrama Lógico](modelo-logico.png)
 
 O modelo lógico detalha a estrutura das tabelas com:
 
