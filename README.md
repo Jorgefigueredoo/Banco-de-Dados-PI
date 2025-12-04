@@ -10,13 +10,19 @@ O ConectaHub é uma solução completa para gerenciar a distribuição de sement
 
 ### 📐 Modelagem
 
-O projeto inclui a modelagem completa do banco de dados:
+O projeto possui modelagem completa do banco de dados:
 
-#### Modelo Conceitual (Diagrama MER)
+**Modelo Conceitual (Diagrama MER)**
+- Representa as entidades do sistema e seus relacionamentos
+- Define as cardinalidades entre as entidades
+- Mostra a estrutura abstrata do negócio
 
-![Diagrama Entidade-Relacionamento](mer-conceitual.png)
+**Modelo Lógico (Diagrama MR)**
+- Detalha a estrutura das tabelas
+- Especifica chaves primárias e estrangeiras
+- Define tipos de dados e restrições
 
-O diagrama conceitual apresenta as principais entidades e seus relacionamentos:
+### Principais Relacionamentos
 
 - **Categorias** (1,n) → **Sementes**: Uma categoria possui várias sementes
 - **Sementes** (0,n) → **Lotes**: Uma semente pode ter vários lotes em estoque
@@ -27,19 +33,6 @@ O diagrama conceitual apresenta as principais entidades e seus relacionamentos:
 - **Pedidos** (1,n) → **Itens_Pedido**: Um pedido contém vários itens
 - **Lotes** (1,n) → **Itens_Pedido**: Um lote pode estar em vários itens
 - **Pedidos** (1,n) → **Histórico_Status**: Registra todas as mudanças de status
-
-#### Modelo Lógico (Diagrama MR)
-
-![Diagrama Lógico](modelo-logico.png)
-
-O modelo lógico detalha a estrutura das tabelas com:
-
-- **Chaves primárias (PK)**: Identificadores únicos de cada tabela
-- **Chaves estrangeiras (FK)**: Relacionamentos entre tabelas
-- **Tipos de dados**: varchar, integer, timestamp, date, text, enum
-- **Restrições**: NOT NULL, UNIQUE, DEFAULT values
-
-> 💡 **Ferramentas utilizadas**: Os diagramas foram criados com MySQL Workbench / brModelo.
 
 ### Tabelas Principais
 
@@ -52,18 +45,6 @@ O modelo lógico detalha a estrutura das tabelas com:
 - **pedidos**: Solicitações de sementes
 - **itens_pedido**: Detalhamento dos itens de cada pedido
 - **historico_status**: Auditoria de mudanças de status
-
-### Relacionamentos
-
-```
-categorias (1) ──→ (N) sementes
-fornecedores (1) ──→ (N) lotes
-sementes (1) ──→ (N) lotes
-agricultores (1) ──→ (N) pedidos
-usuarios (1) ──→ (N) pedidos
-pedidos (1) ──→ (N) itens_pedido
-lotes (1) ──→ (N) itens_pedido
-```
 
 ## 🚀 Como Usar
 
@@ -101,48 +82,71 @@ mysql -u root -p conectahub < "Views SQL.sql"
 
 ### Functions (9)
 
-- `fn_estoque_total_semente()`: Calcula estoque total de uma semente
-- `fn_is_vencido()`: Verifica se lote está vencido
-- `fn_count_pedidos()`: Conta pedidos por agricultor
-- `fn_get_nome_agricultor()`: Retorna nome do agricultor
-- `fn_format_texto()`: Formata texto em maiúsculas
-- `fn_dias_vencimento()`: Calcula dias até vencimento
-- E mais...
+| Função | Descrição |
+|--------|-----------|
+| `fn_estoque_total_semente()` | Calcula estoque total de uma semente |
+| `fn_is_vencido()` | Verifica se lote está vencido |
+| `fn_count_pedidos()` | Conta pedidos por agricultor |
+| `fn_get_nome_agricultor()` | Retorna nome do agricultor |
+| `fn_format_texto()` | Formata texto em maiúsculas |
+| `fn_dias_vencimento()` | Calcula dias até vencimento |
 
 ### Stored Procedures (14)
 
-- `sp_novo_agricultor()`: Cadastra novo agricultor
-- `sp_criar_pedido()`: Cria novo pedido
-- `sp_add_item_pedido()`: Adiciona item e baixa estoque
-- `sp_atualiza_status()`: Atualiza status do pedido
-- `sp_delete_pedido_pendente()`: Remove pedidos pendentes
-- `sp_correcao_estoque()`: Ajusta quantidade em lote
-- `sp_clonar_pedido()`: Duplica pedido existente
-- E mais...
+| Procedure | Descrição |
+|-----------|-----------|
+| `sp_novo_agricultor()` | Cadastra novo agricultor |
+| `sp_criar_pedido()` | Cria novo pedido e retorna ID |
+| `sp_add_item_pedido()` | Adiciona item e baixa estoque automaticamente |
+| `sp_atualiza_status()` | Atualiza status do pedido |
+| `sp_delete_pedido_pendente()` | Remove apenas pedidos pendentes |
+| `sp_correcao_estoque()` | Ajusta quantidade em lote |
+| `sp_clonar_pedido()` | Duplica pedido existente |
+| `sp_relatorio_categoria()` | Gera relatório por categoria |
 
 ### Triggers (12)
 
-- **Validações**: Garante integridade dos dados
-- **Logs Automáticos**: Registra mudanças no histórico
-- **Formatação**: Padroniza textos (maiúsculas/minúsculas)
-- **Proteção**: Impede exclusões indevidas
-- **Estoque**: Gerencia entrada/saída automática
+**Validações e Proteções:**
+- `trg_check_usuario_pedido`: Garante usuário responsável em pedidos
+- `trg_check_validade_lote`: Impede cadastro de lotes vencidos
+- `trg_check_item_vencido`: Bloqueia venda de lotes vencidos
+- `trg_block_del_agricultor`: Protege exclusão de agricultores com pedidos
+- `trg_prevent_negativo`: Impede estoque negativo
+
+**Logs Automáticos:**
+- `trg_log_novo_pedido`: Registra criação de pedido no histórico
+- `trg_log_update_pedido`: Registra mudanças de status
+
+**Formatação Automática:**
+- `trg_upper_agricultor`: Nome em maiúsculas (INSERT)
+- `trg_upper_agricultor_upd`: Nome em maiúsculas (UPDATE)
+- `trg_lower_email_user`: Email em minúsculas
+- `trg_default_desc_cat`: Define descrição padrão em categorias
+
+**Gestão de Estoque:**
+- `trg_estorno_estoque`: Devolve estoque ao deletar item
 
 ### Views (10)
 
-- `vw_estoque_disponivel`: Lotes com saldo
-- `vw_pedidos_pendentes`: Pedidos aguardando aprovação
-- `vw_alerta_validade`: Lotes vencendo em 30 dias
-- `vw_auditoria_pedidos`: Histórico completo de mudanças
-- `vw_desempenho_operadores`: Estatísticas por operador
-- E mais...
+| View | Descrição |
+|------|-----------|
+| `vw_estoque_disponivel` | Lotes com saldo disponível |
+| `vw_pedidos_pendentes` | Pedidos aguardando aprovação |
+| `vw_total_pedidos_agricultor` | Total de pedidos por agricultor |
+| `vw_sementes_categorias` | Catálogo completo de sementes |
+| `vw_auditoria_pedidos` | Histórico completo de mudanças |
+| `vw_alerta_validade` | Lotes vencendo em 30 dias |
+| `vw_detalhes_saida` | Itens vendidos detalhados |
+| `vw_fornecedores_ativos` | Fornecedores com lotes cadastrados |
+| `vw_desempenho_operadores` | Estatísticas por operador |
+| `vw_catalogo_completo` | Catálogo com instruções de plantio |
 
-## 📈 Relatórios Disponíveis
+## 📈 Relatórios Disponíveis (20)
 
-O arquivo `Relatórios SQL.sql` contém 20 consultas prontas:
+O arquivo `Relatórios SQL.sql` contém consultas prontas para:
 
-1. Sementes e categorias
-2. Estoques com fornecedores
+1. Listar sementes e categorias
+2. Mostrar estoques com fornecedores
 3. Pedidos por agricultor
 4. Itens detalhados de pedidos
 5. Total de sementes por categoria
@@ -150,96 +154,168 @@ O arquivo `Relatórios SQL.sql` contém 20 consultas prontas:
 7. Usuários que aprovaram pedidos
 8. Agricultores com pedidos cancelados
 9. Sementes com estoque baixo
-10. Saída total por semente
+10. Total de saída por semente
 11. Fornecedores por categoria
-12. Histórico de mudanças
+12. Histórico de mudanças de status
 13. Média de estoque por fornecedor
 14. Agricultores sem pedidos
-15. Admins sem registros de pedidos
+15. Admins sem registros
 16. Semente com maior estoque
-17. Quantidade por status
+17. Quantidade de pedidos por status
 18. Detalhes completos de pedidos
 19. Fornecedores com lotes vencidos
 20. Último status de cada pedido
 
 ## 🔐 Perfis de Usuário
 
-- **ADMIN**: Acesso completo ao sistema
-- **OPERADOR**: Gerencia pedidos e estoque
-- **AGRICULTOR**: Visualiza e solicita sementes
+### Tipos de Perfil
+
+- **ADMIN**: Acesso completo ao sistema, gerenciamento de usuários e auditoria
+- **OPERADOR**: Gerencia pedidos, estoque e operações do dia a dia
+- **AGRICULTOR**: Visualiza catálogo e solicita sementes
 
 ### Credenciais de Teste
 
 ```
-Admin: admin@conectahub.com / 123456
-Operador: op1@conectahub.com / 123456
-Agricultor: joao@gmail.com / 123456
+Admin Geral: admin@conectahub.com / 123456
+Operador 1: op1@conectahub.com / 123456
+Agricultor João: joao@gmail.com / 123456
 ```
 
 ## 💾 Dados Pré-Carregados
 
-- 20 Categorias de sementes
-- 20 Fornecedores
-- 20 Agricultores
-- 20 Usuários
-- 20 Sementes diferentes
-- 20 Lotes com validades variadas
-- 20 Pedidos (diversos status)
-- Histórico completo de mudanças
+O sistema já vem populado com dados de exemplo:
 
-## 🛡️ Regras de Negócio
+- ✅ 20 Categorias de sementes (Grãos, Hortaliças, Frutíferas, PANC, etc.)
+- ✅ 20 Fornecedores de diversas regiões do Brasil
+- ✅ 20 Agricultores cadastrados
+- ✅ 20 Usuários (Admins, Operadores e Agricultores)
+- ✅ 20 Tipos de sementes diferentes
+- ✅ 20 Lotes com validades variadas
+- ✅ 20 Pedidos com diversos status
+- ✅ Histórico completo de mudanças de status
 
-1. **Estoque**: Não permite venda sem saldo
-2. **Validade**: Bloqueia inserção de lotes vencidos
-3. **Pedidos**: Requer usuário responsável
-4. **Histórico**: Log automático de todas mudanças
-5. **Exclusão**: Protege dados com relacionamentos
-6. **Padronização**: Formata dados automaticamente
+## 🛡️ Regras de Negócio Implementadas
+
+1. **Controle de Estoque**
+   - Não permite venda sem saldo disponível
+   - Baixa automática ao adicionar item no pedido
+   - Estorno automático ao deletar item
+
+2. **Gestão de Validade**
+   - Bloqueia cadastro de lotes já vencidos
+   - Impede venda de produtos vencidos
+   - Alerta de lotes próximos ao vencimento
+
+3. **Rastreabilidade**
+   - Todo pedido requer usuário responsável
+   - Log automático de todas as mudanças de status
+   - Histórico completo de auditoria
+
+4. **Integridade de Dados**
+   - Protege exclusão de dados com relacionamentos
+   - Padronização automática (maiúsculas/minúsculas)
+   - Validações em tempo de inserção
+
+5. **Segurança**
+   - Controle de acesso por perfil
+   - Senhas armazenadas (em produção use hash)
+   - Restrições de exclusão para proteção de dados
 
 ## 📁 Estrutura de Arquivos
 
 ```
-├── Estrutura SQL.sql          # DDL - Criação das tabelas
-├── Inserts SQL.sql            # DML - Dados de exemplo
-├── Procedures e Funções SQL.sql  # Lógica de negócio
-├── Triggers SQL.sql           # Automatizações
-├── Views SQL.sql              # Consultas otimizadas
-├── Relatórios SQL.sql         # Queries prontas
-└── README.md                  # Documentação
+conectahub/
+├── Estrutura SQL.sql              # DDL - Criação das tabelas
+├── Inserts SQL.sql                # DML - Dados de exemplo
+├── Procedures e Funções SQL.sql   # Lógica de negócio
+├── Triggers SQL.sql               # Automatizações e validações
+├── Views SQL.sql                  # Consultas otimizadas
+├── Relatórios SQL.sql             # Queries prontas para análise
+└── README.md                      # Documentação completa
 ```
 
-## 🔧 Requisitos
+## 🔧 Requisitos Técnicos
 
-- MySQL 5.7+ ou MariaDB 10.3+
-- Cliente MySQL (mysql-cli, MySQL Workbench, DBeaver, etc.)
+- **Banco de Dados**: MySQL 5.7+ ou MariaDB 10.3+
+- **Cliente**: mysql-cli, MySQL Workbench, DBeaver, phpMyAdmin ou similar
+- **Sistema Operacional**: Windows, Linux ou macOS
 
-## 📝 Exemplo de Uso
+## 📝 Exemplos de Uso
+
+### Criar e Processar Pedido Completo
 
 ```sql
--- Criar novo pedido
-CALL sp_criar_pedido(1, 2, @novo_id);
+-- 1. Criar novo pedido
+CALL sp_criar_pedido(1, 2, @novo_pedido_id);
+SELECT @novo_pedido_id; -- Exibe ID do pedido criado
 
--- Adicionar item ao pedido
-CALL sp_add_item_pedido(@novo_id, 1, 10);
+-- 2. Adicionar itens ao pedido
+CALL sp_add_item_pedido(@novo_pedido_id, 1, 10);  -- 10 unidades do lote 1
+CALL sp_add_item_pedido(@novo_pedido_id, 2, 5);   -- 5 unidades do lote 2
 
--- Atualizar status
-CALL sp_atualiza_status(@novo_id, 'APROVADO', 2);
+-- 3. Atualizar status do pedido
+CALL sp_atualiza_status(@novo_pedido_id, 'APROVADO', 2);
 
--- Verificar estoque
-SELECT fn_estoque_total_semente(1);
-
--- Consultar pedidos pendentes
-SELECT * FROM vw_pedidos_pendentes;
+-- 4. Verificar estoque disponível
+SELECT fn_estoque_total_semente(1) AS estoque_total;
 ```
 
-## 🤝 Contribuindo
+### Consultas Úteis
 
-Este é um projeto acadêmico. Sugestões e melhorias são bem-vindas!
+```sql
+-- Verificar pedidos pendentes
+SELECT * FROM vw_pedidos_pendentes;
 
+-- Alertas de validade
+SELECT * FROM vw_alerta_validade;
+
+-- Auditoria completa
+SELECT * FROM vw_auditoria_pedidos WHERE pedido_id = @novo_pedido_id;
+
+-- Verificar dias para vencimento de um lote
+SELECT fn_dias_vencimento(1) AS dias_restantes;
+```
+
+### Relatórios Gerenciais
+
+```sql
+-- Desempenho dos operadores
+SELECT * FROM vw_desempenho_operadores;
+
+-- Fornecedores ativos
+SELECT * FROM vw_fornecedores_ativos;
+
+-- Catálogo completo
+SELECT * FROM vw_catalogo_completo;
+```
+
+## 🎯 Casos de Uso
+
+### Fluxo Completo de Pedido
+
+1. **Agricultor solicita sementes** → Status: PENDENTE
+2. **Operador analisa disponibilidade** → Consulta estoque
+3. **Operador aprova pedido** → Status: APROVADO (baixa automática)
+4. **Logística processa entrega** → Status: ENTREGUE
+5. **Sistema registra histórico** → Auditoria completa
+
+### Gestão de Estoque
+
+- Cadastro de novos lotes com validade
+- Consulta de disponibilidade em tempo real
+- Alertas de produtos próximos ao vencimento
+- Correção de estoque quando necessário
+
+### Relatórios e Análises
+
+- Sementes mais solicitadas
+- Desempenho de operadores
+- Fornecedores mais ativos
+- Agricultores sem pedidos recentes
+- 
 ## 📄 Licença
 
-Este projeto foi desenvolvido para fins educacionais.
+Este projeto foi desenvolvido para fins educacionais como parte do Projeto Integrador.
 
----
-
-**Desenvolvido para o Projeto Integrador** 🎓
+*Sistema ConectaHub - Conectando agricultores às melhores sementes* 🌾
